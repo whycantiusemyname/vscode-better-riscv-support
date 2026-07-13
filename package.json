@@ -1,0 +1,109 @@
+{
+  "name": "better-riscv-support",
+  "displayName": "Better RISC-V Support",
+  "description": "RISC-V assembly highlighting, alignment-aware formatting, symbols, and navigation.",
+  "version": "0.1.0",
+  "publisher": "Esing",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Languages",
+    "Formatters",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "riscv",
+    "risc-v",
+    "assembly",
+    "assembler",
+    "formatter"
+  ],
+  "activationEvents": [
+    "onLanguage:riscv",
+    "onCommand:betterRiscvSupport.formatDocument"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "riscv",
+        "aliases": [
+          "RISC-V Assembly",
+          "RISC-V",
+          "riscv"
+        ],
+        "extensions": [
+          ".s",
+          ".S",
+          ".asm",
+          ".riscv"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "riscv",
+        "scopeName": "source.riscv",
+        "path": "./syntaxes/riscv.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "riscv",
+        "path": "./snippets/riscv.code-snippets"
+      }
+    ],
+    "commands": [
+      {
+        "command": "betterRiscvSupport.formatDocument",
+        "title": "Better RISC-V Support: Format Document"
+      }
+    ],
+    "configuration": {
+      "title": "Better RISC-V Support",
+      "properties": {
+        "betterRiscvSupport.indentSize": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 16,
+          "description": "Number of spaces before ordinary assembly instructions."
+        },
+        "betterRiscvSupport.alignDefines": {
+          "type": "boolean",
+          "default": true,
+          "description": "Align macro names and values in each contiguous #define block."
+        },
+        "betterRiscvSupport.alignThreeOperandInstructions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Align mnemonics and both commas for three-operand instructions in each assembly block."
+        },
+        "betterRiscvSupport.maxWorkspaceFiles": {
+          "type": "number",
+          "default": 500,
+          "minimum": 1,
+          "maximum": 5000,
+          "description": "Maximum number of assembly files scanned for workspace symbol navigation."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "test": "npm run compile && node --test dist/test/formatter.test.js dist/test/symbols.test.js",
+    "package": "npm run compile && vsce package --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.15",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.5.4"
+  }
+}

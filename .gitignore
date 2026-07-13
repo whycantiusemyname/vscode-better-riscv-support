@@ -1,2 +1,5 @@
 example/
 vscode-riscv-support/
+node_modules/
+dist/
+*.vsix

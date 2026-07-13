@@ -1,0 +1,13 @@
+.git
+.github
+.vscode
+.gitignore
+src
+example
+vscode-riscv-support
+node_modules
+dist/test
+**/*.ts
+**/*.map
+tsconfig.json
+package-lock.json

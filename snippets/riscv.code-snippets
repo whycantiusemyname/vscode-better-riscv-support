@@ -1,0 +1,40 @@
+{
+  "three-operand instruction": {
+    "prefix": "r3",
+    "body": [
+      "${1:add} ${2:rd}, ${3:rs1}, ${4:rs2}"
+    ],
+    "description": "RISC-V three-operand instruction"
+  },
+  "load immediate": {
+    "prefix": "li",
+    "body": [
+      "li ${1:rd}, ${2:imm}"
+    ],
+    "description": "Load immediate"
+  },
+  "function label": {
+    "prefix": "label",
+    "body": [
+      "${1:name}:",
+      "    ${0}"
+    ],
+    "description": "RISC-V label"
+  },
+  "macro": {
+    "prefix": "macro",
+    "body": [
+      ".macro ${1:name} ${2:arguments}",
+      "    ${0}",
+      ".endm"
+    ],
+    "description": "GNU assembler macro"
+  },
+  "define": {
+    "prefix": "define",
+    "body": [
+      "#define ${1:NAME}  ${2:value}"
+    ],
+    "description": "C-style assembler preprocessor macro"
+  }
+}
