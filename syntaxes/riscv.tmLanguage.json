@@ -84,15 +84,18 @@
     "preprocessor": {
       "patterns": [
         {
-          "begin": "^\\s*(#)\\s*(define)\\s+([A-Za-z_][A-Za-z0-9_]*)(?=\\s|\\(|$)",
+          "begin": "^\\s*(#)\\s*(define)\\s+([A-Za-z_][A-Za-z0-9_]*)(\\([^)]*\\))?(?=\\s|$)",
           "beginCaptures": {
             "1": {
-              "name": "punctuation.definition.preprocessor.riscv"
+              "name": "punctuation.definition.preprocessor.define.riscv"
             },
             "2": {
               "name": "keyword.control.preprocessor.define.riscv"
             },
             "3": {
+              "name": "entity.name.constant.preprocessor.riscv"
+            },
+            "4": {
               "name": "entity.name.constant.preprocessor.riscv"
             }
           },
@@ -104,6 +107,14 @@
             },
             {
               "include": "#block-comments"
+            },
+            {
+              "match": "\\s+(.+?)(?=$)",
+              "captures": {
+                "1": {
+                  "name": "constant.other.preprocessor.value.riscv"
+                }
+              }
             }
           ]
         },

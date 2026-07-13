@@ -147,9 +147,26 @@ function formatterOptions(document: vscode.TextDocument) {
   return {
     indentSize: configuration.get<number>('indentSize', 4),
     alignDefines: configuration.get<boolean>('alignDefines', true),
-    alignThreeOperandInstructions: configuration.get<boolean>(
-      'alignThreeOperandInstructions',
+    defineNameFieldWidth: configuration.get<number>('defineNameFieldWidth', 24),
+    maxBlankLinesWithoutBreak: configuration.get<number>(
+      'maxBlankLinesWithoutBreak',
+      2
+    ),
+    alignAssemblyColumns: configuration.get<boolean>(
+      'alignAssemblyColumns',
       true
+    ),
+    instructionOperandSpacing: configuration.get<number>(
+      'instructionOperandSpacing',
+      1
+    ),
+    commaOperandSpacing: configuration.get<number>(
+      'commaOperandSpacing',
+      1
+    ),
+    commentSpacing: configuration.get<number>(
+      'commentSpacing',
+      1
     )
   };
 }

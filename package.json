@@ -2,7 +2,7 @@
   "name": "better-riscv-support",
   "displayName": "Better RISC-V Support",
   "description": "RISC-V assembly highlighting, alignment-aware formatting, symbols, and navigation.",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "publisher": "Esing",
   "license": "MIT",
   "engines": {
@@ -75,12 +75,47 @@
         "betterRiscvSupport.alignDefines": {
           "type": "boolean",
           "default": true,
-          "description": "Align macro names and values in each contiguous #define block."
+          "description": "Align macro names and values in each #define section. Comment-only lines and up to the configured number of consecutive blank lines remain part of the same section."
         },
-        "betterRiscvSupport.alignThreeOperandInstructions": {
+        "betterRiscvSupport.defineNameFieldWidth": {
+          "type": "number",
+          "default": 24,
+          "minimum": 1,
+          "maximum": 200,
+          "description": "Minimum width of the macro-name field after #define. The default of 24 matches the bundled define-alignment style."
+        },
+        "betterRiscvSupport.maxBlankLinesWithoutBreak": {
+          "type": "number",
+          "default": 2,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Maximum consecutive blank lines that keep #define and assembly-column alignment sections connected. A larger run starts a new section."
+        },
+        "betterRiscvSupport.alignAssemblyColumns": {
           "type": "boolean",
           "default": true,
-          "description": "Align mnemonics and both commas for three-operand instructions in each assembly block."
+          "description": "Align instruction mnemonics, operand commas, and inline comments in each assembly section."
+        },
+        "betterRiscvSupport.instructionOperandSpacing": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 16,
+          "description": "Exact spaces between the aligned instruction column and its first operand."
+        },
+        "betterRiscvSupport.commaOperandSpacing": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 16,
+          "description": "Exact spaces inserted after each operand comma. Shorter operands are padded before their comma to keep comma columns aligned."
+        },
+        "betterRiscvSupport.commentSpacing": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Exact spaces between the longest formatted code tail in an assembly section and an inline # or // comment."
         },
         "betterRiscvSupport.maxWorkspaceFiles": {
           "type": "number",
@@ -90,13 +125,45 @@
           "description": "Maximum number of assembly files scanned for workspace symbol navigation."
         }
       }
-    }
+    },
+    "colors": [
+      {
+        "id": "betterRiscvSupport.define.directiveForeground",
+        "description": "Foreground color for the #define directive.",
+        "defaults": {
+          "light": "#E53935",
+          "dark": "#FF7B72",
+          "highContrast": "#FF7B72",
+          "highContrastLight": "#B42318"
+        }
+      },
+      {
+        "id": "betterRiscvSupport.define.nameForeground",
+        "description": "Foreground color for #define macro names.",
+        "defaults": {
+          "light": "#00897B",
+          "dark": "#56D4C2",
+          "highContrast": "#56D4C2",
+          "highContrastLight": "#006B5E"
+        }
+      },
+      {
+        "id": "betterRiscvSupport.define.valueForeground",
+        "description": "Foreground color for #define macro values.",
+        "defaults": {
+          "light": "#7E57C2",
+          "dark": "#D2A8FF",
+          "highContrast": "#D2A8FF",
+          "highContrastLight": "#6941C6"
+        }
+      }
+    ]
   },
   "scripts": {
     "clean": "rimraf dist",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
-    "test": "npm run compile && node --test dist/test/formatter.test.js dist/test/symbols.test.js",
+    "test": "npm run compile && node --test dist/test/defineHighlighting.test.js dist/test/formatter.test.js dist/test/symbols.test.js",
     "package": "npm run compile && vsce package --allow-missing-repository"
   },
   "devDependencies": {

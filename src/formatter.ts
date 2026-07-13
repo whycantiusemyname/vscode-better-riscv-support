@@ -1,13 +1,25 @@
 export interface FormatterOptions {
   indentSize?: number;
   alignDefines?: boolean;
+  defineNameFieldWidth?: number;
+  maxBlankLinesWithoutBreak?: number;
+  alignAssemblyColumns?: boolean;
+  instructionOperandSpacing?: number;
+  commaOperandSpacing?: number;
+  commentSpacing?: number;
+  /** @deprecated Use alignAssemblyColumns. */
   alignThreeOperandInstructions?: boolean;
 }
 
 interface EffectiveFormatterOptions {
   indentSize: number;
   alignDefines: boolean;
-  alignThreeOperandInstructions: boolean;
+  defineNameFieldWidth: number;
+  maxBlankLinesWithoutBreak: number;
+  alignAssemblyColumns: boolean;
+  instructionOperandSpacing: number;
+  commaOperandSpacing: number;
+  commentSpacing: number;
 }
 
 type LineKind =
@@ -137,16 +149,43 @@ const DATA_DIRECTIVES = new Set([
 ]);
 
 function resolveOptions(options: FormatterOptions): EffectiveFormatterOptions {
-  const candidate = options.indentSize ?? 4;
-  const indentSize = Number.isFinite(candidate)
-    ? Math.min(16, Math.max(1, Math.floor(candidate)))
+  const indentCandidate = options.indentSize ?? 4;
+  const indentSize = Number.isFinite(indentCandidate)
+    ? Math.min(16, Math.max(1, Math.floor(indentCandidate)))
     : 4;
+  const defineWidthCandidate = options.defineNameFieldWidth ?? 24;
+  const defineNameFieldWidth = Number.isFinite(defineWidthCandidate)
+    ? Math.min(200, Math.max(1, Math.floor(defineWidthCandidate)))
+    : 24;
+  const blankLineCandidate = options.maxBlankLinesWithoutBreak ?? 2;
+  const maxBlankLinesWithoutBreak = Number.isFinite(blankLineCandidate)
+    ? Math.min(100, Math.max(0, Math.floor(blankLineCandidate)))
+    : 2;
+  const instructionSpacingCandidate = options.instructionOperandSpacing ?? 1;
+  const instructionOperandSpacing = Number.isFinite(instructionSpacingCandidate)
+    ? Math.min(16, Math.max(1, Math.floor(instructionSpacingCandidate)))
+    : 1;
+  const commaSpacingCandidate = options.commaOperandSpacing ?? 1;
+  const commaOperandSpacing = Number.isFinite(commaSpacingCandidate)
+    ? Math.min(16, Math.max(0, Math.floor(commaSpacingCandidate)))
+    : 1;
+  const commentSpacingCandidate = options.commentSpacing ?? 1;
+  const commentSpacing = Number.isFinite(commentSpacingCandidate)
+    ? Math.min(100, Math.max(0, Math.floor(commentSpacingCandidate)))
+    : 1;
 
   return {
     indentSize,
     alignDefines: options.alignDefines ?? true,
-    alignThreeOperandInstructions:
-      options.alignThreeOperandInstructions ?? true
+    defineNameFieldWidth,
+    maxBlankLinesWithoutBreak,
+    alignAssemblyColumns:
+      options.alignAssemblyColumns ??
+      options.alignThreeOperandInstructions ??
+      true,
+    instructionOperandSpacing,
+    commaOperandSpacing,
+    commentSpacing
   };
 }
 
@@ -326,15 +365,18 @@ function formatInstruction(
   const normalizedCode =
     indent + mnemonic + (normalizedOperandText ? ' ' + normalizedOperandText : '');
 
-  return {
+  const formatted: FormattedLine = {
     kind: 'assembly',
     text: attachComment(normalizedCode, comment),
-    instruction: {
+  };
+  if (operands.every((operand) => operand.length > 0)) {
+    formatted.instruction = {
       mnemonic,
       operands,
       comment
-    }
-  };
+    };
+  }
+  return formatted;
 }
 
 function formatDirective(
@@ -489,51 +531,86 @@ function formatLine(
 
 function formatDefineBlock(
   lines: FormattedLine[],
-  start: number,
-  end: number,
-  align: boolean
+  indexes: number[],
+  align: boolean,
+  minimumNameFieldWidth: number
 ): void {
-  const parsed = lines.slice(start, end).map((line) => parseDefine(line.text));
+  const parsed = indexes.map((index) => parseDefine(lines[index].text));
   if (parsed.some((entry) => !entry)) {
     return;
   }
 
   const definitions = parsed as DefineLine[];
-  const maxNameLength = align
-    ? Math.max(...definitions.map((definition) => definition.name.length))
+  const maxNameLength = Math.max(
+    ...definitions.map((definition) => definition.name.length)
+  );
+  const nameFieldWidth = align
+    ? Math.max(minimumNameFieldWidth, maxNameLength + 1)
     : 0;
 
-  for (let index = start; index < end; index += 1) {
-    const definition = definitions[index - start];
-    const name = align
-      ? definition.name.padEnd(maxNameLength)
+  for (let entryIndex = 0; entryIndex < indexes.length; entryIndex += 1) {
+    const index = indexes[entryIndex];
+    const definition = definitions[entryIndex];
+    const name = align && definition.value
+      ? definition.name.padEnd(nameFieldWidth)
       : definition.name;
     lines[index].text =
-      '#define ' + name + (definition.value ? ' ' + definition.value : '');
+      '#define ' +
+      name +
+      (definition.value ? (align ? '' : ' ') + definition.value : '');
   }
 }
 
-function formatDefineBlocks(lines: FormattedLine[], align: boolean): void {
-  let start = 0;
-  while (start < lines.length) {
-    if (lines[start].kind !== 'define') {
-      start += 1;
+function formatDefineBlocks(
+  lines: FormattedLine[],
+  align: boolean,
+  minimumNameFieldWidth: number,
+  maxBlankLinesWithoutBreak: number
+): void {
+  let indexes: number[] = [];
+  let blankLineCount = 0;
+  const flush = () => {
+    if (indexes.length > 0) {
+      formatDefineBlock(lines, indexes, align, minimumNameFieldWidth);
+      indexes = [];
+    }
+    blankLineCount = 0;
+  };
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (line.kind === 'define') {
+      indexes.push(index);
+      blankLineCount = 0;
       continue;
     }
 
-    let end = start + 1;
-    while (end < lines.length && lines[end].kind === 'define') {
-      end += 1;
+    if (line.kind === 'blank') {
+      blankLineCount += 1;
+      if (indexes.length > 0 && blankLineCount > maxBlankLinesWithoutBreak) {
+        flush();
+      }
+      continue;
     }
-    formatDefineBlock(lines, start, end, align);
-    start = end;
+
+    if (indexes.length > 0 && line.kind === 'comment') {
+      blankLineCount = 0;
+      continue;
+    }
+
+    blankLineCount = 0;
+    flush();
   }
+  flush();
 }
 
-function alignInstructionGroup(
+function alignAssemblySection(
   lines: FormattedLine[],
   indexes: number[],
-  indent: string
+  indent: string,
+  instructionOperandSpacing: number,
+  commaOperandSpacing: number,
+  commentSpacing: number
 ): void {
   if (indexes.length === 0) {
     return;
@@ -541,46 +618,106 @@ function alignInstructionGroup(
 
   const instructions = indexes.map((index) => lines[index].instruction as InstructionParts);
   const maxMnemonic = Math.max(...instructions.map((entry) => entry.mnemonic.length));
-  const maxFirstOperand = Math.max(...instructions.map((entry) => entry.operands[0].length));
-  const maxSecondOperand = Math.max(...instructions.map((entry) => entry.operands[1].length));
+  const commaFieldWidths: number[] = [];
 
-  for (const index of indexes) {
+  for (const instruction of instructions) {
+    for (let operandIndex = 0; operandIndex < instruction.operands.length - 1; operandIndex += 1) {
+      commaFieldWidths[operandIndex] = Math.max(
+        commaFieldWidths[operandIndex] ?? 0,
+        instruction.operands[operandIndex].length
+      );
+    }
+  }
+
+  const codes = indexes.map((index) => {
     const instruction = lines[index].instruction as InstructionParts;
-    const code =
+    let code =
       indent +
-      instruction.mnemonic.padEnd(maxMnemonic) +
-      ' ' +
-      instruction.operands[0].padStart(maxFirstOperand) +
-      ', ' +
-      instruction.operands[1].padStart(maxSecondOperand) +
-      ', ' +
-      instruction.operands[2];
-    lines[index].text = attachComment(code, instruction.comment);
+      (instruction.operands.length > 0
+        ? instruction.mnemonic.padEnd(maxMnemonic)
+        : instruction.mnemonic);
+
+    if (instruction.operands.length > 0) {
+      code += ' '.repeat(instructionOperandSpacing);
+      for (let operandIndex = 0; operandIndex < instruction.operands.length; operandIndex += 1) {
+        const operand = instruction.operands[operandIndex];
+        const hasFollowingComma = operandIndex < instruction.operands.length - 1;
+        code += hasFollowingComma
+          ? operand.padEnd(commaFieldWidths[operandIndex])
+          : operand;
+        if (hasFollowingComma) {
+          code += ',' + ' '.repeat(commaOperandSpacing);
+        }
+      }
+    }
+
+    return code;
+  });
+  const longestCodeLength = Math.max(...codes.map((code) => code.length));
+
+  for (let entryIndex = 0; entryIndex < indexes.length; entryIndex += 1) {
+    const index = indexes[entryIndex];
+    const instruction = lines[index].instruction as InstructionParts;
+    const code = codes[entryIndex];
+    lines[index].text = instruction.comment
+      ? code.padEnd(longestCodeLength) +
+        ' '.repeat(commentSpacing) +
+        instruction.comment.trimStart()
+      : code;
   }
 }
 
-function alignThreeOperandInstructions(
+function alignAssemblyColumns(
   lines: FormattedLine[],
   enabled: boolean,
-  indent: string
+  indent: string,
+  maxBlankLinesWithoutBreak: number,
+  instructionOperandSpacing: number,
+  commaOperandSpacing: number,
+  commentSpacing: number
 ): void {
   if (!enabled) {
     return;
   }
 
   let group: number[] = [];
+  let blankLineCount = 0;
   const flush = () => {
-    alignInstructionGroup(lines, group, indent);
+    alignAssemblySection(
+      lines,
+      group,
+      indent,
+      instructionOperandSpacing,
+      commaOperandSpacing,
+      commentSpacing
+    );
     group = [];
+    blankLineCount = 0;
   };
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    if (line.kind === 'blank') {
+      blankLineCount += 1;
+      if (blankLineCount > maxBlankLinesWithoutBreak) {
+        flush();
+      }
+      continue;
+    }
+
+    if (line.kind === 'comment') {
+      blankLineCount = 0;
+      continue;
+    }
+
+    if (line.kind === 'label') {
+      blankLineCount = 0;
+      continue;
+    }
+
     if (
-      line.kind === 'blank' ||
       line.kind === 'define' ||
       line.kind === 'directive' ||
-      line.kind === 'label' ||
       line.kind === 'preprocessor' ||
       line.kind === 'verbatim'
     ) {
@@ -588,7 +725,8 @@ function alignThreeOperandInstructions(
       continue;
     }
 
-    if (line.kind === 'assembly' && line.instruction?.operands.length === 3) {
+    blankLineCount = 0;
+    if (line.kind === 'assembly' && line.instruction) {
       group.push(index);
     }
   }
@@ -628,11 +766,20 @@ export function formatRiscv(
     insidePreprocessorContinuation = result.continuesPreprocessor;
   }
 
-  formatDefineBlocks(lines, resolved.alignDefines);
-  alignThreeOperandInstructions(
+  formatDefineBlocks(
     lines,
-    resolved.alignThreeOperandInstructions,
-    indent
+    resolved.alignDefines,
+    resolved.defineNameFieldWidth,
+    resolved.maxBlankLinesWithoutBreak
+  );
+  alignAssemblyColumns(
+    lines,
+    resolved.alignAssemblyColumns,
+    indent,
+    resolved.maxBlankLinesWithoutBreak,
+    resolved.instructionOperandSpacing,
+    resolved.commaOperandSpacing,
+    resolved.commentSpacing
   );
 
   const formatted = lines.map((line) => line.text).join(firstEol);

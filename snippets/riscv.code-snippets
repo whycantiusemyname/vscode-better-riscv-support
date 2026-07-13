@@ -1,40 +1,278 @@
 {
-  "three-operand instruction": {
-    "prefix": "r3",
+  "generic three-operand instruction": {
+    "prefix": [
+      "r3",
+      "op3"
+    ],
     "body": [
       "${1:add} ${2:rd}, ${3:rs1}, ${4:rs2}"
     ],
     "description": "RISC-V three-operand instruction"
   },
-  "load immediate": {
+  "add": {
+    "prefix": "add",
+    "body": [
+      "add ${1:rd}, ${2:rs1}, ${3:rs2}"
+    ],
+    "description": "Add two integer registers"
+  },
+  "add immediate": {
+    "prefix": "addi",
+    "body": [
+      "addi ${1:rd}, ${2:rs1}, ${3:imm}"
+    ],
+    "description": "Add an immediate value"
+  },
+  "subtract": {
+    "prefix": "sub",
+    "body": [
+      "sub ${1:rd}, ${2:rs1}, ${3:rs2}"
+    ],
+    "description": "Subtract two integer registers"
+  },
+  "branch": {
+    "prefix": [
+      "branch",
+      "beq",
+      "bne",
+      "blt",
+      "bge",
+      "bltu",
+      "bgeu"
+    ],
+    "body": [
+      "${1:beq} ${2:rs1}, ${3:rs2}, ${4:target}"
+    ],
+    "description": "Conditional branch"
+  },
+  "load memory": {
+    "prefix": [
+      "load",
+      "lb",
+      "lbu",
+      "lh",
+      "lhu",
+      "lw",
+      "lwu",
+      "ld"
+    ],
+    "body": [
+      "${1:lw} ${2:rd}, ${3:offset}(${4:base})"
+    ],
+    "description": "Load from offset(base)"
+  },
+  "store memory": {
+    "prefix": [
+      "store",
+      "sb",
+      "sh",
+      "sw",
+      "sd"
+    ],
+    "body": [
+      "${1:sw} ${2:rs2}, ${3:offset}(${4:base})"
+    ],
+    "description": "Store to offset(base)"
+  },
+  "load immediate pseudo-instruction": {
     "prefix": "li",
     "body": [
       "li ${1:rd}, ${2:imm}"
     ],
-    "description": "Load immediate"
+    "description": "Load immediate pseudo-instruction"
   },
-  "function label": {
-    "prefix": "label",
+  "load address pseudo-instruction": {
+    "prefix": "la",
+    "body": [
+      "la ${1:rd}, ${2:symbol}"
+    ],
+    "description": "Load symbol address pseudo-instruction"
+  },
+  "move pseudo-instruction": {
+    "prefix": [
+      "mv",
+      "move"
+    ],
+    "body": [
+      "mv ${1:rd}, ${2:rs}"
+    ],
+    "description": "Move register pseudo-instruction"
+  },
+  "jump and link": {
+    "prefix": "jal",
+    "body": [
+      "jal ${1:ra}, ${2:target}"
+    ],
+    "description": "Jump and save the return address"
+  },
+  "jump and link register": {
+    "prefix": "jalr",
+    "body": [
+      "jalr ${1:rd}, ${2:offset}(${3:rs1})"
+    ],
+    "description": "Indirect jump and link"
+  },
+  "function call": {
+    "prefix": "call",
+    "body": [
+      "call ${1:target}"
+    ],
+    "description": "GNU assembler function-call pseudo-instruction"
+  },
+  "tail call": {
+    "prefix": "tail",
+    "body": [
+      "tail ${1:target}"
+    ],
+    "description": "GNU assembler tail-call pseudo-instruction"
+  },
+  "unconditional jump": {
+    "prefix": "j",
+    "body": [
+      "j ${1:target}"
+    ],
+    "description": "GNU assembler unconditional-jump pseudo-instruction"
+  },
+  "return": {
+    "prefix": "ret",
+    "body": [
+      "ret"
+    ],
+    "description": "Return pseudo-instruction"
+  },
+  "read CSR": {
+    "prefix": "csrr",
+    "body": [
+      "csrr ${1:rd}, ${2:csr}"
+    ],
+    "description": "Read a control and status register"
+  },
+  "write CSR": {
+    "prefix": "csrw",
+    "body": [
+      "csrw ${1:csr}, ${2:rs}"
+    ],
+    "description": "Write a control and status register"
+  },
+  "environment call": {
+    "prefix": "ecall",
+    "body": [
+      "ecall"
+    ],
+    "description": "Environment call"
+  },
+  "instruction cache fence": {
+    "prefix": "fence.i",
+    "body": [
+      "fence.i"
+    ],
+    "description": "Synchronize instruction fetch with prior stores"
+  },
+  "function definition": {
+    "prefix": [
+      "function",
+      "rfunc"
+    ],
+    "body": [
+      ".text",
+      ".globl ${1:function_name}",
+      ".type ${1:function_name}, @function",
+      "${1:function_name}:",
+      "    ${0}",
+      ".size ${1:function_name}, .-${1:function_name}"
+    ],
+    "description": "GNU assembler function definition"
+  },
+  "label": {
+    "prefix": [
+      "label",
+      "rlabel"
+    ],
     "body": [
       "${1:name}:",
       "    ${0}"
     ],
-    "description": "RISC-V label"
+    "description": "RISC-V assembly label"
   },
-  "macro": {
-    "prefix": "macro",
+  "loop": {
+    "prefix": [
+      "loop",
+      "rloop"
+    ],
+    "body": [
+      "${1:loop}:",
+      "    ${0}",
+      "    bne ${2:rs1}, ${3:rs2}, ${1:loop}"
+    ],
+    "description": "Loop label and branch-back skeleton"
+  },
+  "GNU assembler macro": {
+    "prefix": [
+      "macro",
+      "rmacro"
+    ],
     "body": [
       ".macro ${1:name} ${2:arguments}",
       "    ${0}",
       ".endm"
     ],
-    "description": "GNU assembler macro"
+    "description": "GNU assembler macro definition"
   },
-  "define": {
-    "prefix": "define",
+  "C-style define": {
+    "prefix": [
+      "define",
+      "rdefine"
+    ],
     "body": [
-      "#define ${1:NAME}  ${2:value}"
+      "#define ${1:NAME} ${2:value}"
     ],
     "description": "C-style assembler preprocessor macro"
+  },
+  "symbol equate": {
+    "prefix": [
+      "equ",
+      "requ"
+    ],
+    "body": [
+      ".equ ${1:NAME}, ${2:value}"
+    ],
+    "description": "GNU assembler symbolic constant"
+  },
+  "read-only string": {
+    "prefix": [
+      "string",
+      "rstring"
+    ],
+    "body": [
+      ".section .rodata",
+      "${1:label}:",
+      "    .asciz \"${2:text}\""
+    ],
+    "description": "Read-only NUL-terminated string"
+  },
+  "initialized word": {
+    "prefix": [
+      "word",
+      "rword"
+    ],
+    "body": [
+      ".section .data",
+      "${1:label}:",
+      "    .word ${2:value}"
+    ],
+    "description": "Initialized 32-bit data object"
+  },
+  "zero-initialized object": {
+    "prefix": [
+      "bss",
+      "rbss"
+    ],
+    "body": [
+      ".section .bss",
+      "    .balign ${1:4}",
+      "${2:object}:",
+      "    .zero ${3:size}"
+    ],
+    "description": "Aligned zero-initialized BSS object"
   }
 }

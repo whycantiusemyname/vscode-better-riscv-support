@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { RiscvDefineDecorationController } from './defineDecorations';
 import {
   RISCV_LANGUAGE_ID,
   RiscvCompletionProvider,
@@ -14,8 +15,10 @@ import {
 export function activate(context: vscode.ExtensionContext): void {
   const selector: vscode.DocumentSelector = { language: RISCV_LANGUAGE_ID };
   const index = new RiscvSymbolIndex();
+  const defineDecorations = new RiscvDefineDecorationController();
 
   context.subscriptions.push(
+    defineDecorations,
     vscode.workspace.onDidChangeTextDocument((event) => {
       index.invalidate(event.document.uri);
     }),
