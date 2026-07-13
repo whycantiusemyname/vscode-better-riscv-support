@@ -1,94 +1,174 @@
-# Better RISC-V Support for VS Code
+<p align="center">
+  <img src="images/logo.png" width="128" alt="Better RISC-V Support logo">
+</p>
 
-An RISC-V assembly extension with modern syntax highlighting, a formatter that
-understands assembler layout, and symbol navigation.
+# Better RISC-V Support
 
-## Features
+[![Visual Studio Marketplace version](https://img.shields.io/visual-studio-marketplace/v/Esing.better-riscv-support?label=Marketplace)](https://marketplace.visualstudio.com/items?itemName=Esing.better-riscv-support)
+[![Visual Studio Marketplace installs](https://img.shields.io/visual-studio-marketplace/i/Esing.better-riscv-support?label=Installs)](https://marketplace.visualstudio.com/items?itemName=Esing.better-riscv-support)
+[![License](https://img.shields.io/github/license/Zxis233/vscode-better-riscv-support)](LICENSE)
 
-- TextMate highlighting for GNU-style RISC-V assembly, C preprocessor
-  directives, macros, labels, ABI/register names, CSRs, relocations, vector
-  instructions, compressed instructions, and common Z extensions.
-- #define highlighting: the directive is red, its macro name is teal and
-  bold, and its value is purple by default. This uses editor decorations, so
-  it does not conflict with another extension's token-color customizations.
-- Format Document support:
-  - C-style #define sections align macro names and value columns across blank
-    and comment-only lines;
-  - assembler directives such as .macro, .endm, .option norvc, .norvc, and
-    .novnc start in column zero;
-  - labels start in column zero and normal assembly instructions use four
-    spaces by default;
-  - all assembly instructions align mnemonic, operand comma, and inline
-    comment columns within each assembly section.
-- Go to Definition and Find All References for labels, numeric local labels
-  (1f/1b), .macro names, #define names, and .equ/.set symbols.
-- Document Outline, workspace symbol search, completion for common
-  instructions/directives, and document highlights.
-- Curated GNU RISC-V snippets for arithmetic, control flow, memory access,
-  functions, macros, CSRs, and data definitions.
+A focused VS Code extension for GNU-style RISC-V assembly: syntax-aware
+highlighting, alignment-aware formatting, navigation, completion, and useful
+snippets in one lightweight package.
 
-## Formatting example
+## Highlights
+
+| Area | What you get |
+| --- | --- |
+| Syntax | GNU-style RISC-V syntax highlighting for instructions, directives, registers, CSRs, relocations, labels, comments, macros, and common extensions. |
+| `#define` | A red directive, a teal bold macro name, and a purple macro value. These editor decorations are independent of global TextMate color customizations. |
+| Formatting | Aligned `#define` sections, instruction mnemonics, operand commas, and inline `#` / `//` comments. Structural directives and labels stay in column zero. |
+| Navigation | Go to Definition for labels, numeric local labels (`1f` / `1b`), macros, `#define`s, and `.equ` / `.set` symbols. |
+| Productivity | Outline, workspace symbol search, text-boundary references, document highlights, completion, and 29 GNU RISC-V snippets. |
+
+## Install
+
+### From the Marketplace
+
+1. Open the **Extensions** view in VS Code.
+2. Search for **Better RISC-V Support**.
+3. Select **Install**.
+
+Or install from the command line:
+
+```sh
+code --install-extension Esing.better-riscv-support
+```
+
+### From a VSIX file
+
+```sh
+code --install-extension better-riscv-support-<version>.vsix
+```
+
+The extension requires VS Code 1.85 or later.
+
+## Quick start
+
+1. Open a `.s`, `.S`, `.asm`, or `.riscv` file. If another extension selected
+   a different language mode, use **Change Language Mode** and choose
+   **RISC-V Assembly**.
+2. Run **Format Document** (`Shift+Alt+F` on Windows/Linux) or invoke
+   **Better RISC-V Support: Format Document** from the Command Palette.
+3. Use `F12` for definitions, `Shift+F12` for references, and the Explorer's
+   **Outline** view to navigate symbols.
+4. Type a snippet prefix such as `r3`, `rfunc`, `rmacro`, `rdefine`, `load`,
+   or `branch`, then accept the completion.
+
+## Formatting
 
 Input:
 
-    #define SHORT 1
-    #define A_LONGER_NAME 42
+```asm
+#define SHORT 1
+#define A_LONGER_NAME 42
 
-      .macro SAVE reg
-    addi x1,x0,1
-    add x10,x2,x3
-      .endm
+  .macro SAVE reg
+addi x1,x0,1
+add x10,x2,x3
+  .endm
+```
 
 Output:
 
-    #define SHORT                   1
-    #define A_LONGER_NAME           42
+```asm
+#define SHORT                   1
+#define A_LONGER_NAME           42
 
-    .macro SAVE reg
-        addi  x1, x0, 1
-        add  x10, x2, x3
-    .endm
+.macro SAVE reg
+    addi x1 , x0, 1
+    add  x10, x2, x3
+.endm
+```
 
-The formatter keeps comment-only lines and up to the configured number of
-consecutive blank lines inside a #define section, so values retain one shared
-column like example/iwant_example.S. A directive, instruction, label, other
-preprocessor line, or a longer blank-line run starts a new section.
+Formatting is section-aware rather than file-global:
+
+- `#define` names and values align within a define section. Comment-only lines
+  and up to `betterRiscvSupport.maxBlankLinesWithoutBreak` blank lines remain
+  in the same section.
+- Ordinary assembly lines in one section share mnemonic, comma, and inline
+  comment columns.
+- Labels and structural directives such as `.macro`, `.endm`, `.option`,
+  `.norvc`, and `.novnc` start in column zero.
+- The formatter preserves the document's original line-ending style and final
+  newline convention.
 
 ## Settings
 
-- betterRiscvSupport.indentSize: spaces before normal instructions
-  (default: 4).
-- betterRiscvSupport.alignDefines: align each #define section (default: true).
-- betterRiscvSupport.defineNameFieldWidth: minimum #define macro-name field
-  width (default: 24, matching example/iwant_example.S).
-- betterRiscvSupport.maxBlankLinesWithoutBreak: maximum consecutive blank
-  lines that do not split #define or assembly alignment sections
-  (default: 2; a run of 3 starts a new section).
-- betterRiscvSupport.alignAssemblyColumns: align instruction, comma, and
-  inline-comment columns (default: true).
-- betterRiscvSupport.instructionOperandSpacing: exact spaces between an
-  instruction and its first operand (default: 1).
-- betterRiscvSupport.commaOperandSpacing: exact spaces after each operand
-  comma (default: 1). Shorter operands receive padding before their comma.
-- betterRiscvSupport.commentSpacing: spaces before an inline # or // comment
-  after the longest code tail in its section (default: 1).
-- betterRiscvSupport.maxWorkspaceFiles: limit workspace scanning for symbol
-  navigation (default: 500).
+All settings are available in Settings UI under **Better RISC-V Support**.
 
-## Define colors
+| Setting | Default | Description |
+| --- | ---: | --- |
+| `betterRiscvSupport.indentSize` | `4` | Spaces before ordinary assembly instructions. |
+| `betterRiscvSupport.alignDefines` | `true` | Align macro names and values in each `#define` section. |
+| `betterRiscvSupport.defineNameFieldWidth` | `24` | Minimum macro-name field width after `#define`. |
+| `betterRiscvSupport.maxBlankLinesWithoutBreak` | `2` | Maximum blank lines that keep a define or assembly alignment section connected. |
+| `betterRiscvSupport.alignAssemblyColumns` | `true` | Align instruction, comma, and inline-comment columns. |
+| `betterRiscvSupport.instructionOperandSpacing` | `1` | Spaces between a mnemonic and its first operand. |
+| `betterRiscvSupport.commaOperandSpacing` | `1` | Spaces after an operand comma. |
+| `betterRiscvSupport.commentSpacing` | `1` | Spaces before an inline `#` or `//` comment. |
+| `betterRiscvSupport.maxWorkspaceFiles` | `500` | Maximum assembly-like files scanned for workspace symbols. |
 
-The #define decoration colors are extension-specific and can be overridden
-without editing global TextMate rules:
+Example:
 
 ```jsonc
-"workbench.colorCustomizations": {
-  "betterRiscvSupport.define.directiveForeground": "#E53935",
-  "betterRiscvSupport.define.nameForeground": "#00897B",
-  "betterRiscvSupport.define.valueForeground": "#7E57C2"
+{
+  "betterRiscvSupport.indentSize": 4,
+  "betterRiscvSupport.defineNameFieldWidth": 24,
+  "betterRiscvSupport.maxBlankLinesWithoutBreak": 2,
+  "betterRiscvSupport.instructionOperandSpacing": 1,
+  "betterRiscvSupport.commaOperandSpacing": 1,
+  "betterRiscvSupport.commentSpacing": 2
 }
 ```
 
-## Development
+## `#define` colors
 
-Run npm install, then npm test. Press F5 in VS Code to start an Extension
-Development Host.
+The `#define` highlight uses extension-owned editor decorations, not the
+global `editor.tokenColorCustomizations` array. This lets it coexist with
+other language extensions that also use TextMate color rules.
+
+Override the three colors through `workbench.colorCustomizations`:
+
+```jsonc
+{
+  "workbench.colorCustomizations": {
+    "betterRiscvSupport.define.directiveForeground": "#E53935",
+    "betterRiscvSupport.define.nameForeground": "#00897B",
+    "betterRiscvSupport.define.valueForeground": "#7E57C2"
+  }
+}
+```
+
+## Language support and limitations
+
+- The extension targets GNU-style RISC-V assembly; it is not an assembler,
+  linter, debugger, or complete preprocessor implementation.
+- Whole-document formatting is supported. Range formatting is not currently
+  provided.
+- Backslash-continued preprocessor macros are highlighted, but their layout is
+  intentionally preserved by the formatter.
+- Reference search and document highlighting are identifier-based text
+  matching, not full semantic or include-aware analysis. Numeric local labels
+  are supported by Go to Definition.
+- If another extension owns the same file suffix or formatting provider, select
+  **RISC-V Assembly** as the language mode and choose **Better RISC-V Support**
+  in **Format Document With...**.
+
+## Contributing and support
+
+Bug reports and feature requests are welcome in the
+[issue tracker](https://github.com/Zxis233/vscode-better-riscv-support/issues).
+For local development, run:
+
+```sh
+npm install
+npm test
+```
+
+Press `F5` in VS Code to launch an Extension Development Host.
+
+## License
+
+[MIT](LICENSE)
