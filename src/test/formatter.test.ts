@@ -203,6 +203,63 @@ test('aligns every instruction mnemonic and comma column in an assembly section'
   ].join('\n');
 
   assert.equal(formatRiscv(source), expected);
+  assert.equal(formatRiscv(source, { commaAlignment: 'aligned' }), expected);
+});
+
+test('can keep commas attached to operands while aligning operand columns', () => {
+  const source = [
+    'asm_puts:',
+    'li t0,SIM_CTRL_BASE + SIM_CTRL_OUT',
+    '1:',
+    'lbu t1,0(a0)',
+    'beq t1,zero,2f',
+    'sw t1,0(t0)',
+    'addi a0,a0,1',
+    'jal zero,1b',
+    '2:',
+    'ret'
+  ].join('\n');
+  const options = { commaAlignment: 'afterOperand' as const };
+  const expected = [
+    'asm_puts:',
+    '    li   t0,   SIM_CTRL_BASE + SIM_CTRL_OUT',
+    '1:',
+    '    lbu  t1,   0(a0)',
+    '    beq  t1,   zero, 2f',
+    '    sw   t1,   0(t0)',
+    '    addi a0,   a0,   1',
+    '    jal  zero, 1b',
+    '2:',
+    '    ret'
+  ].join('\n');
+
+  const formatted = formatRiscv(source, options);
+  assert.equal(formatted, expected);
+  assert.equal(formatRiscv(formatted, options), formatted);
+});
+
+test('treats comma spacing as a minimum in afterOperand mode', () => {
+  const source = [
+    'add zero,a0,a1 # alpha',
+    'li t0,1 // beta',
+    'ret # gamma'
+  ].join('\n');
+  const options = {
+    commaAlignment: 'afterOperand' as const,
+    commaOperandSpacing: 2,
+    commentSpacing: 2
+  };
+  const expected = [
+    '    add zero,  a0,  a1  # alpha',
+    '    li  t0,    1        // beta',
+    '    ret                 # gamma'
+  ].join('\n');
+
+  const formatted = formatRiscv(source, options);
+  assert.equal(formatted, expected);
+  const [first, second, third] = formatted.split('\n');
+  assert.equal(first.indexOf('#'), second.indexOf('//'));
+  assert.equal(first.indexOf('#'), third.indexOf('#'));
 });
 
 test('honors configurable assembly gaps and aligns # and // comments', () => {

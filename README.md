@@ -18,7 +18,7 @@ snippets in one lightweight package.
 | --- | --- |
 | Syntax | GNU-style RISC-V syntax highlighting for instructions, directives, registers, CSRs, relocations, labels, comments, macros, and common extensions. |
 | `#define` | A red directive, a teal bold macro name, and a purple macro value. These editor decorations are independent of global TextMate color customizations. |
-| Formatting | Aligned `#define` sections, instruction mnemonics, operand commas, and inline `#` / `//` comments. Structural directives and labels stay in column zero. |
+| Formatting | Aligned `#define` sections, instruction mnemonics, operand columns, and inline `#` / `//` comments. Choose aligned comma columns or commas attached to operands. Structural directives and labels stay in column zero. |
 | Navigation | Go to Definition for labels, numeric local labels (`1f` / `1b`), macros, `#define`s, and `.equ` / `.set` symbols. |
 | Productivity | Outline, workspace symbol search, text-boundary references, document highlights, completion, and 29 GNU RISC-V snippets. |
 
@@ -87,12 +87,19 @@ Formatting is section-aware rather than file-global:
 - `#define` names and values align within a define section. Comment-only lines
   and up to `betterRiscvSupport.maxBlankLinesWithoutBreak` blank lines remain
   in the same section.
-- Ordinary assembly lines in one section share mnemonic, comma, and inline
-  comment columns.
+- Ordinary assembly lines in one section share mnemonic, operand, and inline
+  comment columns. Comma placement is configurable.
 - Labels and structural directives such as `.macro`, `.endm`, `.option`,
   `.norvc`, and `.novnc` start in column zero.
 - The formatter preserves the document's original line-ending style and final
   newline convention.
+
+Choose the comma style with `betterRiscvSupport.commaAlignment`:
+
+- `"aligned"` (default) pads before commas, so comma columns align.
+- `"afterOperand"` keeps each comma adjacent to its operand and puts any
+  additional padding after the comma, so subsequent operand columns still
+  align. For example: `addi a0,   a0,   1`.
 
 ## Settings
 
@@ -104,9 +111,10 @@ All settings are available in Settings UI under **Better RISC-V Support**.
 | `betterRiscvSupport.alignDefines` | `true` | Align macro names and values in each `#define` section. |
 | `betterRiscvSupport.defineNameFieldWidth` | `24` | Minimum macro-name field width after `#define`. |
 | `betterRiscvSupport.maxBlankLinesWithoutBreak` | `2` | Maximum blank lines that keep a define or assembly alignment section connected. |
-| `betterRiscvSupport.alignAssemblyColumns` | `true` | Align instruction, comma, and inline-comment columns. |
+| `betterRiscvSupport.alignAssemblyColumns` | `true` | Align instruction, operand, and inline-comment columns. |
+| `betterRiscvSupport.commaAlignment` | `"aligned"` | `"aligned"` aligns comma columns; `"afterOperand"` keeps commas next to operands while aligning later operand columns. |
 | `betterRiscvSupport.instructionOperandSpacing` | `1` | Spaces between a mnemonic and its first operand. |
-| `betterRiscvSupport.commaOperandSpacing` | `1` | Spaces after an operand comma. |
+| `betterRiscvSupport.commaOperandSpacing` | `1` | Minimum spaces after an operand comma. In `"afterOperand"` mode, more spaces may follow shorter operands to preserve operand columns. |
 | `betterRiscvSupport.commentSpacing` | `1` | Spaces before an inline `#` or `//` comment. |
 | `betterRiscvSupport.maxWorkspaceFiles` | `500` | Maximum assembly-like files scanned for workspace symbols. |
 
@@ -117,6 +125,7 @@ Example:
   "betterRiscvSupport.indentSize": 4,
   "betterRiscvSupport.defineNameFieldWidth": 24,
   "betterRiscvSupport.maxBlankLinesWithoutBreak": 2,
+  "betterRiscvSupport.commaAlignment": "afterOperand",
   "betterRiscvSupport.instructionOperandSpacing": 1,
   "betterRiscvSupport.commaOperandSpacing": 1,
   "betterRiscvSupport.commentSpacing": 2

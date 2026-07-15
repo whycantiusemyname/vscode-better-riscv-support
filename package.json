@@ -2,7 +2,7 @@
   "name": "better-riscv-support",
   "displayName": "Better RISC-V Support",
   "description": "RISC-V assembly highlighting, alignment-aware formatting, symbols, and navigation.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "Esing",
   "license": "MIT",
   "repository": {
@@ -107,7 +107,20 @@
         "betterRiscvSupport.alignAssemblyColumns": {
           "type": "boolean",
           "default": true,
-          "description": "Align instruction mnemonics, operand commas, and inline comments in each assembly section."
+          "description": "Align instruction mnemonics, operand columns, and inline comments in each assembly section. The commaAlignment setting controls comma placement."
+        },
+        "betterRiscvSupport.commaAlignment": {
+          "type": "string",
+          "default": "aligned",
+          "enum": [
+            "aligned",
+            "afterOperand"
+          ],
+          "enumDescriptions": [
+            "Pad before commas so comma columns align across an assembly section.",
+            "Keep each comma directly after its preceding operand and pad after it as needed to align following operand columns."
+          ],
+          "description": "Controls operand-comma placement when assembly-column alignment is enabled."
         },
         "betterRiscvSupport.instructionOperandSpacing": {
           "type": "number",
@@ -121,7 +134,7 @@
           "default": 1,
           "minimum": 0,
           "maximum": 16,
-          "description": "Exact spaces inserted after each operand comma. Shorter operands are padded before their comma to keep comma columns aligned."
+          "description": "Minimum spaces after each operand comma. In aligned mode this is exact; in afterOperand mode shorter operands receive additional padding after their comma to align the next operand column."
         },
         "betterRiscvSupport.commentSpacing": {
           "type": "number",

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { formatRiscv } from './formatter';
+import { formatRiscv, type CommaAlignment } from './formatter';
 import {
   getSymbolTokenAt,
   parseRiscvSymbols,
@@ -155,6 +155,10 @@ function formatterOptions(document: vscode.TextDocument) {
     alignAssemblyColumns: configuration.get<boolean>(
       'alignAssemblyColumns',
       true
+    ),
+    commaAlignment: configuration.get<CommaAlignment>(
+      'commaAlignment',
+      'aligned'
     ),
     instructionOperandSpacing: configuration.get<number>(
       'instructionOperandSpacing',

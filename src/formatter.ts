@@ -1,9 +1,12 @@
+export type CommaAlignment = 'aligned' | 'afterOperand';
+
 export interface FormatterOptions {
   indentSize?: number;
   alignDefines?: boolean;
   defineNameFieldWidth?: number;
   maxBlankLinesWithoutBreak?: number;
   alignAssemblyColumns?: boolean;
+  commaAlignment?: CommaAlignment;
   instructionOperandSpacing?: number;
   commaOperandSpacing?: number;
   commentSpacing?: number;
@@ -17,6 +20,7 @@ interface EffectiveFormatterOptions {
   defineNameFieldWidth: number;
   maxBlankLinesWithoutBreak: number;
   alignAssemblyColumns: boolean;
+  commaAlignment: CommaAlignment;
   instructionOperandSpacing: number;
   commaOperandSpacing: number;
   commentSpacing: number;
@@ -169,6 +173,8 @@ function resolveOptions(options: FormatterOptions): EffectiveFormatterOptions {
   const commaOperandSpacing = Number.isFinite(commaSpacingCandidate)
     ? Math.min(16, Math.max(0, Math.floor(commaSpacingCandidate)))
     : 1;
+  const commaAlignment: CommaAlignment =
+    options.commaAlignment === 'afterOperand' ? 'afterOperand' : 'aligned';
   const commentSpacingCandidate = options.commentSpacing ?? 1;
   const commentSpacing = Number.isFinite(commentSpacingCandidate)
     ? Math.min(100, Math.max(0, Math.floor(commentSpacingCandidate)))
@@ -183,6 +189,7 @@ function resolveOptions(options: FormatterOptions): EffectiveFormatterOptions {
       options.alignAssemblyColumns ??
       options.alignThreeOperandInstructions ??
       true,
+    commaAlignment,
     instructionOperandSpacing,
     commaOperandSpacing,
     commentSpacing
@@ -608,6 +615,7 @@ function alignAssemblySection(
   lines: FormattedLine[],
   indexes: number[],
   indent: string,
+  commaAlignment: CommaAlignment,
   instructionOperandSpacing: number,
   commaOperandSpacing: number,
   commentSpacing: number
@@ -618,12 +626,12 @@ function alignAssemblySection(
 
   const instructions = indexes.map((index) => lines[index].instruction as InstructionParts);
   const maxMnemonic = Math.max(...instructions.map((entry) => entry.mnemonic.length));
-  const commaFieldWidths: number[] = [];
+  const operandFieldWidths: number[] = [];
 
   for (const instruction of instructions) {
     for (let operandIndex = 0; operandIndex < instruction.operands.length - 1; operandIndex += 1) {
-      commaFieldWidths[operandIndex] = Math.max(
-        commaFieldWidths[operandIndex] ?? 0,
+      operandFieldWidths[operandIndex] = Math.max(
+        operandFieldWidths[operandIndex] ?? 0,
         instruction.operands[operandIndex].length
       );
     }
@@ -642,11 +650,19 @@ function alignAssemblySection(
       for (let operandIndex = 0; operandIndex < instruction.operands.length; operandIndex += 1) {
         const operand = instruction.operands[operandIndex];
         const hasFollowingComma = operandIndex < instruction.operands.length - 1;
-        code += hasFollowingComma
-          ? operand.padEnd(commaFieldWidths[operandIndex])
-          : operand;
-        if (hasFollowingComma) {
-          code += ',' + ' '.repeat(commaOperandSpacing);
+        if (!hasFollowingComma) {
+          code += operand;
+          continue;
+        }
+
+        const fieldWidth = operandFieldWidths[operandIndex] ?? operand.length;
+        if (commaAlignment === 'afterOperand') {
+          code +=
+            operand +
+            ',' +
+            ' '.repeat(fieldWidth - operand.length + commaOperandSpacing);
+        } else {
+          code += operand.padEnd(fieldWidth) + ',' + ' '.repeat(commaOperandSpacing);
         }
       }
     }
@@ -672,6 +688,7 @@ function alignAssemblyColumns(
   enabled: boolean,
   indent: string,
   maxBlankLinesWithoutBreak: number,
+  commaAlignment: CommaAlignment,
   instructionOperandSpacing: number,
   commaOperandSpacing: number,
   commentSpacing: number
@@ -687,6 +704,7 @@ function alignAssemblyColumns(
       lines,
       group,
       indent,
+      commaAlignment,
       instructionOperandSpacing,
       commaOperandSpacing,
       commentSpacing
@@ -777,6 +795,7 @@ export function formatRiscv(
     resolved.alignAssemblyColumns,
     indent,
     resolved.maxBlankLinesWithoutBreak,
+    resolved.commaAlignment,
     resolved.instructionOperandSpacing,
     resolved.commaOperandSpacing,
     resolved.commentSpacing
