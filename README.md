@@ -159,6 +159,12 @@ focused on C/C++, including **Visual Studio 2017 Dark - C++**. Earlier releases
 used `support.function` and `variable.other`, which some themes render with the
 same foreground as ordinary source text.
 
+The extension also supplies default `files.associations` entries for `.s`,
+`.S`, `.asm`, and `.riscv`. This keeps RISC-V source files attached to the
+`riscv` language when another installed extension, such as PlatformIO, also
+claims generic assembly extensions. An explicit user or workspace association
+still takes precedence.
+
 ## Language support and limitations
 
 - The extension targets GNU-style RISC-V assembly; it is not an assembler,

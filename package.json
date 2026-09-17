@@ -2,7 +2,7 @@
   "name": "better-riscv-support",
   "displayName": "Better RISC-V Support",
   "description": "RISC-V assembly highlighting, alignment-aware formatting, symbols, and navigation.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "Esing",
   "license": "MIT",
   "repository": {
@@ -63,6 +63,14 @@
         "path": "./syntaxes/riscv.tmLanguage.json"
       }
     ],
+    "configurationDefaults": {
+      "files.associations": {
+        "*.s": "riscv",
+        "*.S": "riscv",
+        "*.asm": "riscv",
+        "*.riscv": "riscv"
+      }
+    },
     "snippets": [
       {
         "language": "riscv",

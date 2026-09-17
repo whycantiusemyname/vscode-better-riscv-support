@@ -13,6 +13,14 @@ type Grammar = {
   repository: Record<string, GrammarRule>;
 };
 
+type ExtensionManifest = {
+  contributes: {
+    configurationDefaults?: {
+      'files.associations'?: Record<string, string>;
+    };
+  };
+};
+
 function loadGrammar(): Grammar {
   const grammarPath = path.resolve(
     __dirname,
@@ -51,4 +59,20 @@ test('uses theme-compatible scopes for instructions and registers', () => {
 
 test('keeps the grammar attached to the shared RISC-V language scope', () => {
   assert.equal(loadGrammar().scopeName, 'source.riscv');
+});
+
+test('wins generic assembly file associations back from competing extensions', () => {
+  const manifestPath = path.resolve(__dirname, '../../package.json');
+  const manifest = JSON.parse(
+    readFileSync(manifestPath, 'utf8')
+  ) as ExtensionManifest;
+  const associations =
+    manifest.contributes.configurationDefaults?.['files.associations'];
+
+  assert.deepEqual(associations, {
+    '*.s': 'riscv',
+    '*.S': 'riscv',
+    '*.asm': 'riscv',
+    '*.riscv': 'riscv'
+  });
 });
