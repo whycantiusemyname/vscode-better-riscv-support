@@ -44,8 +44,9 @@ const REGISTER_NAMES = new Set([
   ...CSRS
 ]);
 
-const LEADING_INSTRUCTION =
-  /^\s*(?:(?:[A-Za-z_.$][A-Za-z0-9_.$]*|[0-9]+)\s*:\s*)?([A-Za-z][A-Za-z0-9_.]*)\b/;
+const LEADING_LABEL =
+  /^\s*(?:[A-Za-z_.$][A-Za-z0-9_.$]*|[0-9]+)\s*:\s*/;
+const LEADING_INSTRUCTION = /^\s*([A-Za-z][A-Za-z0-9_.]*)\b/;
 const IDENTIFIER = /[A-Za-z_.$][A-Za-z0-9_.$]*/g;
 
 type MaskState = {
@@ -131,13 +132,16 @@ export function collectSyntaxHighlightRanges(text: string): SyntaxHighlightRange
 
   text.split(/\r?\n/).forEach((line, lineNumber) => {
     const code = maskNonCode(line, state);
-    const match = LEADING_INSTRUCTION.exec(code);
+    const label = LEADING_LABEL.exec(code);
+    const statementStart = label?.[0].length ?? 0;
+    const statement = code.slice(statementStart);
+    const match = LEADING_INSTRUCTION.exec(statement);
     if (!match) {
       return;
     }
 
     const instruction = match[1];
-    const start = match.index + match[0].lastIndexOf(instruction);
+    const start = statementStart + match.index + match[0].lastIndexOf(instruction);
     const remainder = code.slice(start + instruction.length);
     if (/^\s*=/.test(remainder)) {
       return;
