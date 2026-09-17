@@ -150,6 +150,15 @@ Override the three colors through `workbench.colorCustomizations`:
 }
 ```
 
+## Theme compatibility
+
+Instruction mnemonics use the standard `keyword` TextMate scope family and
+registers use `variable.language`. These scopes are intentionally conservative:
+they remain visibly highlighted in VS Code's built-in themes as well as themes
+focused on C/C++, including **Visual Studio 2017 Dark - C++**. Earlier releases
+used `support.function` and `variable.other`, which some themes render with the
+same foreground as ordinary source text.
+
 ## Language support and limitations
 
 - The extension targets GNU-style RISC-V assembly; it is not an assembler,
