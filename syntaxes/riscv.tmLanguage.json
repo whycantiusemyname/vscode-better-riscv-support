@@ -219,47 +219,47 @@
       "patterns": [
         {
           "match": "\\b(?:add|addi|addw|addiw|sub|subw|sll|slli|sllw|slliw|srl|srli|srlw|srliw|sra|srai|sraw|sraiw|slt|slti|sltu|sltiu|xor|xori|or|ori|and|andi|lui|auipc|jal|jalr|beq|bne|blt|bge|bltu|bgeu|lb|lh|lw|ld|lbu|lhu|lwu|sb|sh|sw|sd|fence(?:\\.i)?|ecall|ebreak|pause)\\b",
-          "name": "keyword.other.instruction.riscv"
+          "name": "support.function.instruction.riscv"
         },
         {
           "match": "\\b(?:la|li|lla|lga|lui|mv|not|neg|negw|sext\\.w|zext\\.w|seqz|snez|sltz|sgtz|beqz|bnez|blez|bgez|bltz|bgtz|bgt|ble|bgtu|bleu|j|jr|ret|call|tail|nop)\\b",
-          "name": "keyword.other.instruction.pseudo.riscv"
+          "name": "support.function.instruction.pseudo.riscv"
         },
         {
           "match": "\\b(?:mul|mulh|mulhsu|mulhu|mulw|div|divu|divw|divuw|rem|remu|remw|remuw)\\b",
-          "name": "keyword.other.instruction.extension.m.riscv"
+          "name": "support.function.instruction.extension.m.riscv"
         },
         {
           "match": "\\b(?:lr|sc|amoswap|amoadd|amoxor|amoand|amoor|amomin|amomax|amominu|amomaxu)\\.(?:w|d)(?:\\.(?:aq|rl|aqrl))?\\b",
-          "name": "keyword.other.instruction.extension.a.riscv"
+          "name": "support.function.instruction.extension.a.riscv"
         },
         {
           "match": "\\b(?:csrr|csrw|csrs|csrc|csrwi|csrsi|csrci|csrrw|csrrs|csrrc|csrrwi|csrrsi|csrrci|rdcycle|rdtime|rdinstret|rdcycleh|rdtimeh|rdinstreth|wfi|mret|sret|uret|dret|sfence\\.vma|hfence\\.vvma|hfence\\.gvma)\\b",
-          "name": "keyword.other.instruction.privileged.riscv"
+          "name": "support.function.instruction.privileged.riscv"
         },
         {
           "match": "\\bf(?:add|sub|mul|div|sqrt|sgnj|sgnjn|sgnjx|min|max|madd|msub|nmsub|nmadd|cvt|mv|class|eq|lt|le)\\.[A-Za-z0-9.]+\\b",
-          "name": "keyword.other.instruction.extension.floating.riscv"
+          "name": "support.function.instruction.extension.floating.riscv"
         },
         {
           "match": "\\b(?:flw|fld|fsw|fsd|fmv\\.x\\.w|fmv\\.w\\.x|fmv\\.x\\.d|fmv\\.d\\.x)\\b",
-          "name": "keyword.other.instruction.extension.floating.riscv"
+          "name": "support.function.instruction.extension.floating.riscv"
         },
         {
           "match": "\\b(?:clz|ctz|cpop|sext\\.b|sext\\.h|zext\\.h|orc\\.b|rev8|rol|ror|rori|andn|orn|xnor|min|max|minu|maxu|sh1add|sh2add|sh3add|bset|bseti|bclr|bclri|binv|binvi|bext|bexti|pack|packh|packw|unzip|zip)\\b",
-          "name": "keyword.other.instruction.extension.bitmanip.riscv"
+          "name": "support.function.instruction.extension.bitmanip.riscv"
         },
         {
           "match": "\\bc\\.[A-Za-z][A-Za-z0-9.]*\\b",
-          "name": "keyword.other.instruction.extension.compressed.riscv"
+          "name": "support.function.instruction.extension.compressed.riscv"
         },
         {
           "match": "\\bv[A-Za-z][A-Za-z0-9.]*\\b",
-          "name": "keyword.other.instruction.extension.vector.riscv"
+          "name": "support.function.instruction.extension.vector.riscv"
         },
         {
           "match": "\\b(?:sspush|sspopchk|ssrdp|ssamoswap|ssq|sslw|ssld|lpad)\\b",
-          "name": "keyword.other.instruction.extension.z.riscv"
+          "name": "support.function.instruction.extension.z.riscv"
         }
       ]
     },
@@ -267,23 +267,23 @@
       "patterns": [
         {
           "match": "\\bx(?:[0-9]|[12][0-9]|3[01])\\b",
-          "name": "variable.language.register.integer.riscv"
+          "name": "variable.other.register.integer.riscv"
         },
         {
           "match": "\\b(?:zero|ra|sp|gp|tp|t[0-6]|s(?:[0-9]|1[01])|fp|a[0-7])\\b",
-          "name": "variable.language.register.integer.abi.riscv"
+          "name": "variable.other.register.integer.abi.riscv"
         },
         {
           "match": "\\bf(?:[0-9]|[12][0-9]|3[01])\\b",
-          "name": "variable.language.register.float.riscv"
+          "name": "variable.other.register.float.riscv"
         },
         {
           "match": "\\b(?:ft(?:[0-9]|1[01])|fs(?:[0-9]|1[01])|fa[0-7])\\b",
-          "name": "variable.language.register.float.abi.riscv"
+          "name": "variable.other.register.float.abi.riscv"
         },
         {
           "match": "\\bv(?:[0-9]|[12][0-9]|3[01])\\b",
-          "name": "variable.language.register.vector.riscv"
+          "name": "variable.other.register.vector.riscv"
         }
       ]
     },
@@ -291,7 +291,7 @@
       "patterns": [
         {
           "match": "\\b(?:fflags|frm|fcsr|cycle|time|instret|cycleh|timeh|instreth|ustatus|uie|utvec|uscratch|uepc|ucause|utval|uip|sstatus|sie|stvec|sscratch|sepc|scause|stval|sip|satp|mvendorid|marchid|mimpid|mhartid|mstatus|misa|medeleg|mideleg|mie|mtvec|mcounteren|mscratch|mepc|mcause|mtval|mip|menvcfg|mseccfg|mcycle|minstret|mcountinhibit|pmpcfg[0-3]|pmpaddr(?:[0-9]|1[0-5])|dcsr|dpc|dscratch[01]|vstart|vl|vtype|vlenb)\\b",
-          "name": "variable.language.register.csr.riscv"
+          "name": "variable.other.register.csr.riscv"
         }
       ]
     },

@@ -2,7 +2,7 @@
   "name": "better-riscv-support",
   "displayName": "Better RISC-V Support",
   "description": "RISC-V assembly highlighting, alignment-aware formatting, symbols, and navigation.",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "publisher": "Esing",
   "license": "MIT",
   "repository": {
@@ -161,6 +161,26 @@
       }
     },
     "colors": [
+      {
+        "id": "betterRiscvSupport.instructionForeground",
+        "description": "Foreground color for RISC-V instruction mnemonics.",
+        "defaults": {
+          "light": "#795E26",
+          "dark": "#DCDCAA",
+          "highContrast": "#FFFF00",
+          "highContrastLight": "#795E26"
+        }
+      },
+      {
+        "id": "betterRiscvSupport.registerForeground",
+        "description": "Foreground color for RISC-V registers and CSRs.",
+        "defaults": {
+          "light": "#001080",
+          "dark": "#9CDCFE",
+          "highContrast": "#75BEFF",
+          "highContrastLight": "#001080"
+        }
+      },
       {
         "id": "betterRiscvSupport.define.directiveForeground",
         "description": "Foreground color for the #define directive.",

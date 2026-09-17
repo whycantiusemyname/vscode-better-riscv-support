@@ -18,6 +18,10 @@ type ExtensionManifest = {
     configurationDefaults?: {
       'files.associations'?: Record<string, string>;
     };
+    colors?: Array<{
+      id: string;
+      defaults: Record<string, string>;
+    }>;
   };
 };
 
@@ -34,7 +38,7 @@ function names(rule: GrammarRule): string[] {
   return current.concat((rule.patterns ?? []).flatMap(names));
 }
 
-test('uses theme-compatible scopes for instructions and registers', () => {
+test('preserves semantic TextMate scopes for instructions and registers', () => {
   const grammar = loadGrammar();
   const instructionScopes = names(grammar.repository.instructions);
   const registerScopes = names(grammar.repository.registers);
@@ -43,18 +47,35 @@ test('uses theme-compatible scopes for instructions and registers', () => {
   assert.ok(instructionScopes.length > 0);
   assert.ok(
     instructionScopes.every((scope) =>
-      scope.startsWith('keyword.other.instruction')
+      scope.startsWith('support.function.instruction')
     ),
     `unexpected instruction scopes: ${instructionScopes.join(', ')}`
   );
   assert.ok(registerScopes.length > 0);
   assert.ok(
     registerScopes.every((scope) =>
-      scope.startsWith('variable.language.register')
+      scope.startsWith('variable.other.register')
     ),
     `unexpected register scopes: ${registerScopes.join(', ')}`
   );
-  assert.deepEqual(csrScopes, ['variable.language.register.csr.riscv']);
+  assert.deepEqual(csrScopes, ['variable.other.register.csr.riscv']);
+});
+
+test('contributes distinct theme-aware instruction and register colors', () => {
+  const manifestPath = path.resolve(__dirname, '../../package.json');
+  const manifest = JSON.parse(
+    readFileSync(manifestPath, 'utf8')
+  ) as ExtensionManifest;
+  const colors = new Map(
+    (manifest.contributes.colors ?? []).map((color) => [color.id, color.defaults])
+  );
+  const instruction = colors.get('betterRiscvSupport.instructionForeground');
+  const register = colors.get('betterRiscvSupport.registerForeground');
+
+  assert.ok(instruction, 'instruction color contribution is missing');
+  assert.ok(register, 'register color contribution is missing');
+  assert.notEqual(instruction.dark, register.dark);
+  assert.notEqual(instruction.light, register.light);
 });
 
 test('keeps the grammar attached to the shared RISC-V language scope', () => {

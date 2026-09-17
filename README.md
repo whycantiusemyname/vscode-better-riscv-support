@@ -16,7 +16,7 @@ snippets in one lightweight package.
 
 | Area | What you get |
 | --- | --- |
-| Syntax | GNU-style RISC-V syntax highlighting for instructions, directives, registers, CSRs, relocations, labels, comments, macros, and common extensions. |
+| Syntax | GNU-style RISC-V syntax highlighting with distinct theme-aware colors for instructions and registers, plus directives, CSRs, relocations, labels, comments, macros, and common extensions. |
 | `#define` | A red directive, a teal bold macro name, and a purple macro value. These editor decorations are independent of global TextMate color customizations. |
 | Formatting | Aligned `#define` sections, instruction mnemonics, operand columns, and inline `#` / `//` comments. Choose aligned comma columns or commas attached to operands. Structural directives and labels stay in column zero. |
 | Navigation | Go to Definition for labels, numeric local labels (`1f` / `1b`), macros, `#define`s, and `.equ` / `.set` symbols. |
@@ -152,12 +152,23 @@ Override the three colors through `workbench.colorCustomizations`:
 
 ## Theme compatibility
 
-Instruction mnemonics use the standard `keyword` TextMate scope family and
-registers use `variable.language`. These scopes are intentionally conservative:
-they remain visibly highlighted in VS Code's built-in themes as well as themes
-focused on C/C++, including **Visual Studio 2017 Dark - C++**. Earlier releases
-used `support.function` and `variable.other`, which some themes render with the
-same foreground as ordinary source text.
+Instruction mnemonics retain the semantic `support.function` TextMate scope
+family and registers retain `variable.other`. The extension also applies
+theme-aware editor decorations so C/C++-focused themes cannot collapse both
+categories into the same blue. The bundled dark defaults are yellow for
+instructions and light blue for registers; directives, comments, strings, and
+numbers continue to follow the active theme.
+
+Override these two colors through `workbench.colorCustomizations`:
+
+```jsonc
+{
+  "workbench.colorCustomizations": {
+    "betterRiscvSupport.instructionForeground": "#DCDCAA",
+    "betterRiscvSupport.registerForeground": "#9CDCFE"
+  }
+}
+```
 
 The extension also supplies default `files.associations` entries for `.s`,
 `.S`, `.asm`, and `.riscv`. This keeps RISC-V source files attached to the

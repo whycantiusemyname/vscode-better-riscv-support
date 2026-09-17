@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { RiscvDefineDecorationController } from './defineDecorations';
+import { RiscvSyntaxDecorationController } from './syntaxDecorations';
 import {
   RISCV_LANGUAGE_ID,
   RiscvCompletionProvider,
@@ -16,9 +17,11 @@ export function activate(context: vscode.ExtensionContext): void {
   const selector: vscode.DocumentSelector = { language: RISCV_LANGUAGE_ID };
   const index = new RiscvSymbolIndex();
   const defineDecorations = new RiscvDefineDecorationController();
+  const syntaxDecorations = new RiscvSyntaxDecorationController();
 
   context.subscriptions.push(
     defineDecorations,
+    syntaxDecorations,
     vscode.workspace.onDidChangeTextDocument((event) => {
       index.invalidate(event.document.uri);
     }),
